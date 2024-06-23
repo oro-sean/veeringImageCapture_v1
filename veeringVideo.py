@@ -7,7 +7,8 @@ import cv2
 from PIL import Image
 import piexif
 import asyncio
-from open_gopro import WiredGoPro
+import numpy as np
+#from open_gopro import WiredGoPro
 
 class Video_TimeStamping:
     def __init__(self,folder):
@@ -86,8 +87,11 @@ class Video_TimeStamping:
         self.Write_CSV()
 
 class SailTimeLapse:
-    def __init__(self,path_mp4):
+    def __init__(self,path_mp4, sail):
         self.path_mp4 = path_mp4
+        file, extension = os.path.splitext(self.path_mp4)
+        self.extension = extension
+        self.sail = sail
 
     def Get_TS_info(self):
         s=''
@@ -118,15 +122,25 @@ class SailTimeLapse:
                 break
 
             converted = cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB)
+            if self.sail == 'stbJib':
+                converted = np.flip(converted,axis=0)
+            if self.sail == 'stbMain':
+                converted = np.flip(converted,axis=1)
+            #if self.sail == 'portJib':
+                #converted = np.flip(converted,axis=0)
+                #converted = np.flip(converted,axis=1)
+
             pil_im = Image.fromarray(converted)
-            fileName = str(image_counter) + '.jpg'
+            fileName = str(image_counter)+str(self.timeLapse_endTime)+'.jpg'
             file_names.append(fileName)
             pil_im.save(os.path.join(self.exportFolder, fileName))
             image_counter += 1
 
         self.file_names = file_names
 
+
     def Update_TS(self):
+
         self.timeLapse_startTime = self.timeLapse_endTime - self.timeLapse_timeStep * len(self.file_names)
         for i in range(len(self.file_names)):
             timeStamp = self.timeLapse_startTime+self.timeLapse_timeStep*(i+1)
@@ -142,17 +156,31 @@ class SailTimeLapse:
             exif_bytes = piexif.dump(exif_dict)
             filePath = os.path.join(self.exportFolder,self.file_names[i])
             piexif.insert(exif_bytes, filePath)
+            s = ''
+            fileName_new = s.join(list(str(timeStamp.year)) + list(str('-')) + list(str(timeStamp.month)) +
+                                  list(str('-')) + list(str(timeStamp.day)) +
+                              list(str('_')) + list(str(timeStamp.hour)) +
+                                  list(str('-')) + list(str(timeStamp.minute)) +
+                                  list(str('-')) + list(str(timeStamp.second)) +
+                                  list(str('_')) + list(str(self.sail)))
+            fileName_new = os.path.join(self.exportFolder, fileName_new+str('.jpg'))
+            os.rename(filePath,fileName_new)
 
     def TimeLapse_To_JPG(self):
-        self.Get_TS_info()
-        self.Make_JPG()
-        self.Update_TS()
+
+        if (self.extension == '.mp4') or (self.extension == '.MP4'):
+            self.Get_TS_info()
+            self.Make_JPG()
+            self.Update_TS()
+            print(str(self.path_mp4)+ "Complete")
 
 class Rename_GP_TimeLapse:
     def __init__(self,file,timeZone,timeStep):
         self.file = file
         self.timeZone = datetime.timedelta(hours=int(timeZone))
         self.timeStep = timeStep
+        file, extension = os.path.splitext(self.file)
+        self.extension = extension
 
     def Get_TS(self):
         metaData = ffmpeg.probe(self.file)
@@ -207,8 +235,9 @@ class Rename_GP_TimeLapse:
         os.rename(self.file,fileName)
 
     def Rename(self):
-        self.Get_TS()
-        self.Change_File_Name()
+        if (self.extension == '.mp4') or (self.extension == '.MP4'):
+            self.Get_TS()
+            self.Change_File_Name()
 
 class goPro_Import:
     def __init__(self,serialNo, destinationPath):
@@ -269,3 +298,5 @@ class Filter_JPG:
 
 
 
+
+#%%

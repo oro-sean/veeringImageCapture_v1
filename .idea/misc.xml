@@ -3,7 +3,7 @@
   <component name="Black">
     <option name="sdkName" value="veeringImageCapture_v1" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="VeeringReports" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="stripeField" project-jdk-type="Python SDK" />
   <component name="PyCharmDSProjectLayout">
     <option name="id" value="JupyterRightHiddenStructureLayout" />
   </component>

@@ -7,7 +7,7 @@ class VeeringLog:
         self.logPath = logPath
 
     def Expedition_To_DF(self):
-        with open('/Users/sean/mbp_storage/log-2024Apr03.csv', newline='') as csvfile:
+        with open(self.logPath, newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             labels = next(reader)
             num = next(reader)
@@ -47,10 +47,13 @@ class VeeringLog:
     def Get_Filter_TS(self,heighLimit,lowLimit):
         upwindPort = self.log_df['timeStamp'].loc[(self.log_df['TWA'] < heighLimit*-1) & (self.log_df['TWA'] > lowLimit*-1)]
         upwindStb = self.log_df['timeStamp'].loc[(self.log_df['TWA'] < lowLimit) & (self.log_df['TWA'] > heighLimit)]
-        self.upwindStb =[]
+        self.upwindStb = []
+        self.upwindAll = []
         for ts in list(upwindStb):
             self.upwindStb.append(ts.to_pydatetime().replace(microsecond=0))
+            self.upwindAll.append(ts.to_pydatetime().replace(microsecond=0))
         self.upwindPort =[]
         for ts in list(upwindPort):
             self.upwindPort.append(ts.to_pydatetime().replace(microsecond=0))
+            self.upwindAll.append(ts.to_pydatetime().replace(microsecond=0))
 
